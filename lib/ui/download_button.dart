@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
+import 'package:neom_commons/utils/constants/translations/app_translation_constants.dart';
 import 'package:neom_core/domain/model/app_media_item.dart';
 
-import '../../domain/use_cases/download.dart';
-import '../../utils/constants/player_translation_constants.dart';
+import '../data/implementations/download_controller.dart';
+import '../utils/constants/download_translation_constants.dart';
 
 class DownloadButton extends StatefulWidget {
 
@@ -22,14 +23,14 @@ class DownloadButton extends StatefulWidget {
 }
 
 class DownloadButtonState extends State<DownloadButton> {
-  late Download down;
+  late DownloadController down;
   final Box downloadsBox = Hive.box('downloads');
   final ValueNotifier<bool> showStopButton = ValueNotifier<bool>(false);
 
   @override
   void initState() {
     super.initState();
-    down = Download(widget.mediaItem.id);
+    down = DownloadController(widget.mediaItem.id);
     down.addListener(() {
       setState(() {});
     });
@@ -54,7 +55,7 @@ class DownloadButtonState extends State<DownloadButton> {
             ? IconButton(icon: const Icon(Icons.save_alt,),
           iconSize: widget.size,
           color: Theme.of(context).iconTheme.color,
-          tooltip: PlayerTranslationConstants.download.tr,
+          tooltip: AppTranslationConstants.download.tr,
           onPressed: () {down.prepareDownload(context, widget.mediaItem);},
         ) : GestureDetector(
           child: Stack(
@@ -74,7 +75,7 @@ class DownloadButtonState extends State<DownloadButton> {
                       ),
                       iconSize: 25.0,
                       color: Theme.of(context).iconTheme.color,
-                      tooltip: PlayerTranslationConstants.stopDown.tr,
+                      tooltip: DownloadTranslationConstants.stopDown.tr,
                       onPressed: () {
                         down.download = false;
                         },

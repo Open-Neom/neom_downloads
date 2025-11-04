@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:neom_core/domain/model/app_media_item.dart';
-import '../../domain/use_cases/download.dart';
-import '../../utils/constants/player_translation_constants.dart';
+import '../data/implementations/download_controller.dart';
+import '../utils/constants/download_translation_constants.dart';
 
 class MultiDownloadButton extends StatefulWidget {
   final List data;
@@ -18,13 +18,13 @@ class MultiDownloadButton extends StatefulWidget {
 }
 
 class MultiDownloadButtonState extends State<MultiDownloadButton> {
-  late Download down;
+  late DownloadController down;
   int done = 0;
 
   @override
   void initState() {
     super.initState();
-    down = Download(widget.data.first['id'].toString());
+    down = DownloadController(widget.data.first['id'].toString());
     down.addListener(() {
       setState(() {});
     });
@@ -53,7 +53,7 @@ class MultiDownloadButtonState extends State<MultiDownloadButton> {
                 ),
                 color: Theme.of(context).colorScheme.secondary,
                 iconSize: 25.0,
-                tooltip: PlayerTranslationConstants.downDone.tr,
+                tooltip: DownloadTranslationConstants.downDone.tr,
                 onPressed: () {},
               )
             : down.progress == 0
@@ -63,7 +63,7 @@ class MultiDownloadButtonState extends State<MultiDownloadButton> {
                         Icons.download_rounded,
                       ),
                       iconSize: 25.0,
-                      tooltip: PlayerTranslationConstants.down.tr,
+                      tooltip: DownloadTranslationConstants.down.tr,
                       onPressed: () async {
                         for (final items in widget.data) {
                           AppMediaItem appMediaItem = AppMediaItem.fromJSON(items);

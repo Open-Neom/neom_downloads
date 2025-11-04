@@ -2,9 +2,8 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-// ignore: avoid_classes_with_only_static_members
-class ExtStorageProvider {
-  // asking for permission
+class DownloadUtilities {
+
   static Future<bool> requestPermission(Permission permission) async {
     if (await permission.isGranted) {
       return true;

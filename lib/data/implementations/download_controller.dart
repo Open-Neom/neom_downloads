@@ -5,43 +5,49 @@ import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
 import 'package:neom_commons/utils/app_utilities.dart';
+import 'package:neom_commons/utils/constants/translations/app_translation_constants.dart';
+import 'package:neom_commons/utils/constants/translations/common_translation_constants.dart';
 import 'package:neom_commons/utils/file_downloader.dart';
 import 'package:neom_core/app_config.dart';
 import 'package:neom_core/domain/model/app_media_item.dart';
+import 'package:neom_core/domain/use_cases/download_service.dart';
 import 'package:neom_core/utils/enums/app_hive_box.dart';
 import 'package:neom_core/utils/enums/app_media_source.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import '../../utils/constants/player_translation_constants.dart';
-import 'ext_storage_provider.dart';
+import '../../utils/constants/download_constants.dart';
+import '../../utils/constants/download_translation_constants.dart';
+import '../../utils/download_utilities.dart';
 
-class Download with ChangeNotifier {
-  static final Map<String, Download> _instances = {};
+class DownloadController with ChangeNotifier implements DownloadService {
+
+  static final Map<String, DownloadController> _instances = {};
   final String id;
 
-  factory Download(String id) {
+  factory DownloadController(String id) {
     if (_instances.containsKey(id)) {
       return _instances[id]!;
     } else {
-      final instance = Download._internal(id);
+      final instance = DownloadController._internal(id);
       _instances[id] = instance;
       return instance;
     }
   }
 
-  Download._internal(this.id);
+  DownloadController._internal(this.id);
 
   int? rememberOption;
   final ValueNotifier<bool> remember = ValueNotifier<bool>(false);
-  String preferredDownloadQuality = Hive.box(AppHiveBox.settings.name).get('downloadQuality', defaultValue: '320 kbps') as String;
-  String downloadFormat = Hive.box(AppHiveBox.settings.name).get('downloadFormat', defaultValue: 'm4a').toString();
-  bool createDownloadFolder = Hive.box(AppHiveBox.settings.name).get('createDownloadFolder', defaultValue: false) as bool;
+  String preferredDownloadQuality = Hive.box(AppHiveBox.settings.name).get(DownloadTranslationConstants.downloadQuality, defaultValue: '320 kbps') as String;
+  String downloadFormat = Hive.box(AppHiveBox.settings.name).get(DownloadTranslationConstants.downloadFormat, defaultValue: 'm4a').toString();
+  bool createDownloadFolder = Hive.box(AppHiveBox.settings.name).get(DownloadTranslationConstants.createDownloadFolder, defaultValue: false) as bool;
 
   double? progress = 0.0;
   String lastDownloadId = '';
   bool download = true;
 
+  @override
   Future<void> prepareDownload(
     BuildContext context,
     AppMediaItem mediaItem, {
@@ -67,11 +73,11 @@ class Download with ChangeNotifier {
         await openAppSettings();
       }
     }
-    final RegExp avoid = RegExp(r'[\.\\\*\:\"\?#/;\|]');
+
     mediaItem.name = mediaItem.name.split('(From')[0].trim();
 
     String filename = '';
-    final int downFilename = Hive.box(AppHiveBox.settings.name).get('downFilename', defaultValue: 0) as int;
+    final int downFilename = Hive.box(AppHiveBox.settings.name).get(DownloadTranslationConstants.downFilename, defaultValue: 0) as int;
     if (downFilename == 0) {
       filename = '${mediaItem.name} - ${mediaItem.artist}';
     } else if (downFilename == 1) {
@@ -80,7 +86,7 @@ class Download with ChangeNotifier {
       filename = mediaItem.name;
     }
     // String filename = '${data["title"]} - ${data["artist"]}';
-    String dlPath = Hive.box(AppHiveBox.settings.name).get('downloadPath', defaultValue: '') as String;
+    String dlPath = Hive.box(AppHiveBox.settings.name).get(DownloadTranslationConstants.downloadPath, defaultValue: '') as String;
     AppConfig.logger.i('Cached Download path: $dlPath');
     if (filename.length > 200) {
       final String temp = filename.substring(0, 200);
@@ -89,10 +95,10 @@ class Download with ChangeNotifier {
       filename = tempList.join(', ');
     }
 
-    filename = '${filename.replaceAll(avoid, "").replaceAll("  ", " ")}.m4a';
+    filename = '${filename.replaceAll(DownloadConstants.avoidRegex, "").replaceAll("  ", " ")}.m4a';
     if (dlPath == '') {
       AppConfig.logger.i('Cached Download path is empty, getting new path');
-      final String? temp = await ExtStorageProvider.getExtStorage(
+      final String? temp = await DownloadUtilities.getExtStorage(
         dirName: 'Music',
         writeAccess: true,
       );
@@ -101,10 +107,10 @@ class Download with ChangeNotifier {
     AppConfig.logger.i('New Download path: $dlPath');
 
         if (createFolder && createDownloadFolder && folderName != null) {
-      final String foldername = folderName.replaceAll(avoid, '');
-      dlPath = '$dlPath/$foldername';
+      final String fName = folderName.replaceAll(DownloadConstants.avoidRegex, '');
+      dlPath = '$dlPath/$fName';
       if (!await Directory(dlPath).exists()) {
-        AppConfig.logger.i('Creating folder $foldername');
+        AppConfig.logger.i('Creating folder $fName');
         await Directory(dlPath).create();
       }
     }
@@ -135,14 +141,14 @@ class Download with ChangeNotifier {
                 borderRadius: BorderRadius.circular(10.0),
               ),
               title: Text(
-                PlayerTranslationConstants.alreadyExists.tr,
+                CommonTranslationConstants.alreadyExists.tr,
                 style:
                     TextStyle(color: Theme.of(context).colorScheme.secondary),
               ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('"${mediaItem.name}" ${PlayerTranslationConstants.downAgain.tr}',
+                  Text('"${mediaItem.name}" ${DownloadTranslationConstants.downAgain.tr}',
                     softWrap: true,
                   ),
                   const SizedBox(
@@ -172,9 +178,7 @@ class Download with ChangeNotifier {
                                   remember.value = value ?? false;
                                 },
                               ),
-                              Text(
-                                PlayerTranslationConstants.rememberChoice.tr,
-                              ),
+                              Text(DownloadTranslationConstants.rememberChoice.tr,),
                             ],
                           ),
                         );
@@ -196,7 +200,7 @@ class Download with ChangeNotifier {
                               rememberOption = 0;
                             },
                             child: Text(
-                              PlayerTranslationConstants.no.tr,
+                              AppTranslationConstants.no.tr,
                               style: const TextStyle(color: Colors.white),
                             ),
                           ),
@@ -211,7 +215,7 @@ class Download with ChangeNotifier {
                               downloadMediaItem(context, dlPath, filename, mediaItem);
                               rememberOption = 1;
                             },
-                            child: Text(PlayerTranslationConstants.yesReplace.tr),
+                            child: Text(DownloadTranslationConstants.yesReplace.tr),
                           ),
                           const SizedBox(width: 5.0),
                           TextButton(
@@ -227,7 +231,7 @@ class Download with ChangeNotifier {
                               rememberOption = 2;
                               downloadMediaItem(context, dlPath, filename, mediaItem);
                             },
-                            child: Text(PlayerTranslationConstants.yes.tr,
+                            child: Text(AppTranslationConstants.yes.tr,
                               style: TextStyle(
                                 color: Theme.of(context).colorScheme.secondary == Colors.white
                                     ? Colors.black : null,
@@ -250,6 +254,7 @@ class Download with ChangeNotifier {
     }
   }
 
+  @override
   Future<void> downloadMediaItem(BuildContext context, String? dlPath,
     String fileName, AppMediaItem mediaItem,) async {
     AppConfig.logger.i('Processing download');
@@ -300,20 +305,6 @@ class Download with ChangeNotifier {
           .then((value) => imgPath = value.path);
     }
     final String kUrl = mediaItem.url;
-
-    ///VERIFY HOW TO IMPLEMENT ONCE YOUTUBE SPOTIFY JIOSAAVN ARE USED
-    // if (mediaItem.url.toString().contains('google')) {
-    //   AppConfig.logger.i('Fetching youtube download url with preferred quality');
-    //   // filename = filename.replaceAll('.m4a', '.opus');
-    //   // kUrl = preferredYtDownloadQuality == 'High' ? mediaItem.['highUrl'].toString() : mediaItem['lowUrl'].toString();
-    //   if (kUrl == 'null') {
-    //     kUrl = mediaItem.url;
-    //   }
-    // } else {
-    //   AppConfig.logger.i('Fetching jiosaavn download url with preferred quality');
-    //   kUrl = kUrl.replaceAll('_96.', "_${preferredDownloadQuality.replaceAll(' kbps', '')}.",
-    //   );
-    // }
 
     AppConfig.logger.i('Connecting to Client');
     final client = Client();
@@ -392,7 +383,7 @@ class Download with ChangeNotifier {
 
         AppConfig.logger.i('Everything done, showing snackbar');
         AppUtilities.showSnackBar(
-          message: '"${mediaItem.name}" ${PlayerTranslationConstants.downed.tr}',
+          message: '"${mediaItem.name}" ${DownloadTranslationConstants.downed.tr}',
         );
       } else {
         download = true;

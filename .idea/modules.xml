@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/neom_media_player.iml" filepath="$PROJECT_DIR$/.idea/neom_media_player.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/neom_downloads.iml" filepath="$PROJECT_DIR$/.idea/neom_downloads.iml" />
     </modules>
   </component>
 </project>
