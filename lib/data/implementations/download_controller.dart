@@ -79,9 +79,9 @@ class DownloadController with ChangeNotifier implements DownloadService {
     String filename = '';
     final int downFilename = Hive.box(AppHiveBox.settings.name).get(DownloadTranslationConstants.downFilename, defaultValue: 0) as int;
     if (downFilename == 0) {
-      filename = '${mediaItem.name} - ${mediaItem.artist}';
+      filename = '${mediaItem.name} - ${mediaItem.ownerName}';
     } else if (downFilename == 1) {
-      filename = '${mediaItem.artist} - ${mediaItem.name}';
+      filename = '${mediaItem.ownerName} - ${mediaItem.name}';
     } else {
       filename = mediaItem.name;
     }
