@@ -4,7 +4,7 @@
 // import 'package:flutter/foundation.dart';
 // import 'package:flutter/material.dart';
 // import 'package:flutter/rendering.dart';
-// import 'package:get/get.dart';
+// import 'package:sint/sint.dart';
 // import 'package:hive/hive.dart';
 // import 'package:neom_commons/core/domain/model/app_media_item.dart';
 // import 'package:neom_commons/core/ui/widgets/appbar_child.dart';

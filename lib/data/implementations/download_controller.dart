@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:sint/sint.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
 import 'package:neom_commons/utils/app_utilities.dart';

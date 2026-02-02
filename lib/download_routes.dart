@@ -1,10 +1,10 @@
-import 'package:get/get.dart';
+import 'package:sint/sint.dart';
 
 class DownloadRoutes {
 
-  static final List<GetPage<dynamic>> routes = [
+  static final List<SintPage<dynamic>> routes = [
     ///INCLUDE DOWNLOADS PAGE HERE
-    // GetPage(
+    // SintPage(
     //     name: AppRouteConstants.downloads,
     //     page: () => const DownloadPage(),
     //     transition: Transition.zoom
