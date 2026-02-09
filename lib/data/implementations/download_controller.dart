@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:sint/sint.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
 import 'package:neom_commons/utils/app_utilities.dart';
@@ -15,6 +14,7 @@ import 'package:neom_core/utils/enums/app_hive_box.dart';
 import 'package:neom_core/utils/enums/app_media_source.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:sint/sint.dart';
 
 import '../../utils/constants/download_constants.dart';
 import '../../utils/constants/download_translation_constants.dart';

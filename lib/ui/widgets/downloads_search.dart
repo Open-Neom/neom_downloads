@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:sint/sint.dart';
 import 'package:neom_commons/ui/widgets/images/neom_image_card.dart';
 import 'package:neom_commons/utils/constants/translations/app_translation_constants.dart';
 import 'package:neom_commons/utils/mappers/app_media_item_mapper.dart';
 import 'package:neom_core/domain/use_cases/audio_player_invoker_service.dart';
+import 'package:sint/sint.dart';
 
 class DownloadsSearch extends SearchDelegate {
 
@@ -103,7 +103,7 @@ class DownloadsSearch extends SearchDelegate {
               ),
         onTap: () {
           Sint.find<AudioPlayerInvokerService>().init(
-            appMediaItems: AppMediaItemMapper.listFromList(suggestionList),
+            mediaItems: AppMediaItemMapper.listFromList(suggestionList),
             index: index,
             isOffline: isDowns,
             fromDownloads: isDowns,
@@ -157,7 +157,7 @@ class DownloadsSearch extends SearchDelegate {
         ),
         onTap: () {
           Sint.find<AudioPlayerInvokerService>().init(
-            appMediaItems: AppMediaItemMapper.listFromList(suggestionList),
+            mediaItems: AppMediaItemMapper.listFromList(suggestionList),
             index: index,
             isOffline: isDowns,
             fromDownloads: isDowns,

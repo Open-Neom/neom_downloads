@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:sint/sint.dart';
 import 'package:neom_core/domain/model/app_media_item.dart';
+import 'package:sint/sint.dart';
+
 import '../data/implementations/download_controller.dart';
 import '../utils/constants/download_translation_constants.dart';
 
