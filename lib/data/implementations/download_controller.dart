@@ -1,5 +1,5 @@
-import 'dart:io';
-
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:neom_core/utils/platform/core_io.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
@@ -56,7 +56,7 @@ class DownloadController with ChangeNotifier implements DownloadService {
   }) async {
     AppConfig.logger.i('Preparing download for ${mediaItem.name}');
     download = true;
-    if (Platform.isAndroid || Platform.isIOS) {
+    if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
       AppConfig.logger.i('Requesting storage permission');
       PermissionStatus status = await Permission.storage.status;
       if (status.isDenied) {
@@ -257,6 +257,11 @@ class DownloadController with ChangeNotifier implements DownloadService {
   @override
   Future<void> downloadMediaItem(BuildContext context, String? dlPath,
     String fileName, AppMediaItem mediaItem,) async {
+    if (kIsWeb) {
+      AppConfig.logger.w('Downloads not supported on web');
+      AppUtilities.showSnackBar(message: CommonTranslationConstants.notAvailable.tr);
+      return;
+    }
     AppConfig.logger.i('Processing download');
     progress = null;
     notifyListeners();

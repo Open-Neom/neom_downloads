@@ -170,7 +170,7 @@
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
-//           backgroundColor: AppColor.main50,
+//           backgroundColor: AppColor.scaffold,
 //           appBar: AppBarChild(
 //             title: PlayerTranslationConstants.downloads.tr,
 //             actionWidgets: [

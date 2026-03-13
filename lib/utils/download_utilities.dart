@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:neom_core/utils/platform/core_io.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -25,6 +26,7 @@ class DownloadUtilities {
     Directory? directory;
 
     try {
+      if (kIsWeb) return null;
       // checking platform
       if (Platform.isAndroid) {
         if (await requestPermission(Permission.storage)) {

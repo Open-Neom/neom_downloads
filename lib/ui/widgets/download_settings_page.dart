@@ -29,7 +29,7 @@
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
-//         backgroundColor: AppColor.main50,
+//         backgroundColor: AppColor.scaffold,
 //         appBar: AppBarChild(title: PlayerTranslationConstants.downloads.tr,),
 //         body: Container(
 //           decoration: AppTheme.appBoxDecoration,
@@ -115,7 +115,7 @@
 //                 onTap: () {
 //                   showModalBottomSheet(
 //                     isDismissible: true,
-//                     backgroundColor: AppColor.main75,
+//                     backgroundColor: AppColor.surfaceElevated,
 //                     context: context,
 //                     builder: (BuildContext context) {
 //                       return ListView(
