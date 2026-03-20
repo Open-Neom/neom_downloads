@@ -8,6 +8,7 @@ import 'package:neom_commons/utils/constants/translations/app_translation_consta
 import 'package:neom_commons/utils/constants/translations/common_translation_constants.dart';
 import 'package:neom_commons/utils/file_downloader.dart';
 import 'package:neom_core/app_config.dart';
+import 'package:neom_core/utils/neom_error_logger.dart';
 import 'package:neom_core/domain/model/app_media_item.dart';
 import 'package:neom_core/domain/use_cases/download_service.dart';
 import 'package:neom_core/utils/enums/app_hive_box.dart';
@@ -328,8 +329,8 @@ class DownloadController with ChangeNotifier implements DownloadService {
         if (!download) {
           client.close();
         }
-      } catch (e) {
-        AppConfig.logger.e('Error in download: $e');
+      } catch (e, st) {
+        NeomErrorLogger.recordError(e, st, module: 'neom_downloads', operation: 'downloadMediaItem.stream');
       }
     }).onDone(() async {
       if (download) {
@@ -346,8 +347,8 @@ class DownloadController with ChangeNotifier implements DownloadService {
             //     await file2.delete();
             //   }
             // });
-          } catch (e) {
-            AppConfig.logger.e('Error editing tags: $e');
+          } catch (e, st) {
+            NeomErrorLogger.recordError(e, st, module: 'neom_downloads', operation: 'downloadMediaItem.tags');
           }
         } else {
           ///This would be needed when adding offline mode downloading audio.
