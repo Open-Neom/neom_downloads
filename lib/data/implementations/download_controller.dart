@@ -197,7 +197,7 @@ class DownloadController with ChangeNotifier implements DownloadService {
                             ),
                             onPressed: () {
                               lastDownloadId = mediaItem.id;
-                              Navigator.pop(context);
+                              Sint.back();
                               rememberOption = 0;
                             },
                             child: Text(
@@ -211,7 +211,7 @@ class DownloadController with ChangeNotifier implements DownloadService {
                                   ? Colors.white : Colors.grey[700],
                             ),
                             onPressed: () async {
-                              Navigator.pop(context);
+                              Sint.back();
                               Hive.box(AppHiveBox.downloads.name).delete(mediaItem.id);
                               downloadMediaItem(context, dlPath, filename, mediaItem);
                               rememberOption = 1;
@@ -225,7 +225,7 @@ class DownloadController with ChangeNotifier implements DownloadService {
                               backgroundColor: Theme.of(context).colorScheme.secondary,
                             ),
                             onPressed: () async {
-                              Navigator.pop(context);
+                              Sint.back();
                               while (await File('$dlPath/$filename').exists()) {
                                 filename = filename.replaceAll('.m4a', ' (1).m4a');
                               }

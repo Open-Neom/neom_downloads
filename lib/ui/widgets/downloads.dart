@@ -542,7 +542,7 @@
 //               foregroundColor: Colors.white,
 //             ),
 //             onPressed: () {
-//               Navigator.pop(context);
+//               Sint.back();
 //             },
 //             child: Text(PlayerTranslationConstants.cancel.tr),
 //           ),
@@ -552,7 +552,7 @@
 //               backgroundColor: Theme.of(context).colorScheme.secondary,
 //             ),
 //             onPressed: () async {
-//               Navigator.pop(context);
+//               Sint.back();
 //               mediaItem.name = titleController.text;
 //               mediaItem.album = albumController.text;
 //               mediaItem.artist = artistController.text;

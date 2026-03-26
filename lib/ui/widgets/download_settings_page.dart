@@ -134,7 +134,7 @@
 //                                 if (val ?? false) {
 //                                   downFilename = 0;
 //                                   settingsBox.put('downFilename', 0);
-//                                   Navigator.pop(context);
+//                                   Sint.back();
 //                                 }
 //                               },
 //                             ),
@@ -149,7 +149,7 @@
 //                                 if (val ?? false) {
 //                                   downFilename = 1;
 //                                   settingsBox.put('downFilename', 1);
-//                                   Navigator.pop(context);
+//                                   Sint.back();
 //                                 }
 //                               },
 //                             ),
@@ -162,7 +162,7 @@
 //                                 if (val ?? false) {
 //                                   downFilename = 2;
 //                                   settingsBox.put('downFilename', 2);
-//                                   Navigator.pop(context);
+//                                   Sint.back();
 //                                 }
 //                               },
 //                             ),
