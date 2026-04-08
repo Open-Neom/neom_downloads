@@ -388,4 +388,4 @@ fabric.properties
 
 **/.DS_Store
 .DS_Store
-# End of https://www.toptal.com/developers/gitignore/api/flutter,visualstudiocode,androidstudio,android,xcode,swift,kotlin,fastlane
+# End of https://www.toptal.com/developers/gitignore/api/flutter,visualstudiocode,androidstudio,android,xcode,swift,kotlin,fastlanepubspec.lock
