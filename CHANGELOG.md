@@ -1,3 +1,8 @@
+# Changelog - neom_downloads
+
+## Unreleased - System updates
+- Actualizaciones de estabilidad y compatibilidad.
+
 ### 1.0.0 - Initial Release & Decoupling for Future Development
 This marks the initial official release (v1.0.0) of neom_downloads as a new, independent module within the Open Neom ecosystem. Previously, download functionalities were often integrated directly into broader modules like neom_commons or scattered across the main application. This decoupling is a crucial step in formalizing the download management layer, enhancing modularity, and strengthening Open Neom's adherence to Clean Architecture principles.
 
