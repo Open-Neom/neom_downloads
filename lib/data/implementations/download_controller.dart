@@ -38,6 +38,14 @@ class DownloadController with ChangeNotifier implements DownloadService {
 
   DownloadController._internal(this.id);
 
+  @override
+  void removeListener(VoidCallback listener) {
+    super.removeListener(listener);
+    if (!hasListeners && (progress == 0.0 || progress == null)) {
+      _instances.remove(id);
+    }
+  }
+
   int? rememberOption;
   final ValueNotifier<bool> remember = ValueNotifier<bool>(false);
   String preferredDownloadQuality = Hive.box(AppHiveBox.settings.name).get(DownloadTranslationConstants.downloadQuality, defaultValue: '320 kbps') as String;

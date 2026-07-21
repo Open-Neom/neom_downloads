@@ -1,3 +1,6 @@
+
+## [2.0.0-unreleased] - 2026-07-21
+- Refactor and compatibility updates for download_controller.dart, download_button.dart.
 # Changelog - neom_downloads
 
 ## Unreleased - System updates

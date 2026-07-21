@@ -27,13 +27,24 @@ class DownloadButtonState extends State<DownloadButton> {
   final Box downloadsBox = Hive.box('downloads');
   final ValueNotifier<bool> showStopButton = ValueNotifier<bool>(false);
 
+  late final VoidCallback _listener;
+
   @override
   void initState() {
     super.initState();
     down = DownloadController(widget.mediaItem.id);
-    down.addListener(() {
-      setState(() {});
-    });
+    _listener = () {
+      if (mounted) {
+        setState(() {});
+      }
+    };
+    down.addListener(_listener);
+  }
+
+  @override
+  void dispose() {
+    down.removeListener(_listener);
+    super.dispose();
   }
 
   @override
