@@ -11,7 +11,7 @@
 //     String? message,
 //   }) async {
 //     final String? temp =
-//         await FilePicker.platform.getDirectoryPath(dialogTitle: message);
+//         await FilePicker.getDirectoryPath(dialogTitle: message);
 //     AppConfig.logger.i('Selected folder: $temp');
 //     return (temp == '/' || temp == null) ? '' : temp;
 //   }
@@ -21,7 +21,7 @@
 //     // List<String>? ext,
 //     String? message,
 //   }) async {
-//     final FilePickerResult? result = await FilePicker.platform.pickFiles(
+//     final FilePickerResult? result = await FilePicker.pickFiles(
 //       // allowedExtensions: ext,
 //       dialogTitle: message,
 //     );
