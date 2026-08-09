@@ -1,3 +1,5 @@
+import 'dart:async' show StreamSink;
+
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:neom_core/utils/platform/core_io.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +21,7 @@ import 'package:sint/sint.dart';
 
 import '../../utils/constants/download_constants.dart';
 import '../../utils/constants/download_translation_constants.dart';
+import '../../utils/download_progress.dart';
 import '../../utils/download_utilities.dart';
 
 class DownloadController with ChangeNotifier implements DownloadService {
@@ -277,7 +280,6 @@ class DownloadController with ChangeNotifier implements DownloadService {
     String? mediaPath = '';
     String imgPath = '';
     String? appPath;
-    final List<int> bytes = [];
     final artName = fileName.replaceAll('.m4a', '.jpg');
     if (!Platform.isWindows) {
       AppConfig.logger.i('Getting App Path for storing image');
@@ -318,93 +320,98 @@ class DownloadController with ChangeNotifier implements DownloadService {
       await File('$appPath/$artName').create(recursive: true)
           .then((value) => imgPath = value.path);
     }
-    final String kUrl = mediaItem.url;
 
-    AppConfig.logger.i('Connecting to Client');
     final client = Client();
-    final response = await client.send(Request('GET', Uri.parse(kUrl)));
-    final int total = response.contentLength ?? 0;
-    int received = 0;
-    AppConfig.logger.i('Client connected, Starting download');
-    response.stream.asBroadcastStream();
-    AppConfig.logger.i('broadcasting download state');
-    response.stream.listen((value) {
-      bytes.addAll(value);
-      try {
-        received += value.length;
-        progress = received / total;
-        notifyListeners();
+    StreamSink<List<int>>? sink;
+    try {
+      AppConfig.logger.i('Connecting to client');
+      final response = await client.send(Request('GET', Uri.parse(mediaItem.url)));
+
+      // Never save an error page (404/403/500) as the media file — it would
+      // be registered as a valid offline track that never plays.
+      if (!DownloadProgress.isSuccessStatus(response.statusCode)) {
+        throw Exception('HTTP ${response.statusCode} downloading ${mediaItem.name}');
+      }
+
+      final int total = response.contentLength ?? 0;
+      int received = 0;
+      AppConfig.logger.i('Connected, streaming to disk '
+          '(${total > 0 ? '$total bytes' : 'unknown size'})');
+
+      // Stream chunks straight to disk — the previous implementation
+      // accumulated the whole file in memory before writing it.
+      sink = File(mediaPath!).openWrite();
+      final activeSink = sink;
+      await for (final chunk in response.stream) {
         if (!download) {
-          client.close();
+          throw const _DownloadCancelled();
         }
-      } catch (e, st) {
-        NeomErrorLogger.recordError(e, st, module: 'neom_downloads', operation: 'downloadMediaItem.stream');
-      }
-    }).onDone(() async {
-      if (download) {
-        AppConfig.logger.i('Download complete, modifying file');
-        final file = File(mediaPath!);
-        await file.writeAsBytes(bytes);
-        imgPath = await FileDownloader.downloadImage(mediaItem.imgUrl);
-        if(mediaItem.lyrics.isNotEmpty) AppConfig.logger.i('Getting audio tags');
-        if (Platform.isAndroid) {
-          try {
-            AppConfig.logger.i('Started tag editing');
-            // await Future.delayed(const Duration(seconds: 1), () async {
-            //   if (await file2.exists()) {
-            //     await file2.delete();
-            //   }
-            // });
-          } catch (e, st) {
-            NeomErrorLogger.recordError(e, st, module: 'neom_downloads', operation: 'downloadMediaItem.tags');
-          }
-        } else {
-          ///This would be needed when adding offline mode downloading audio.
-          // Set metadata to file
-          // await MetadataGod.writeMetadata(
-          //   file: mediaPath!,
-          //   metadata: Metadata(
-          //     title: mediaItem.name,
-          //     artist: mediaItem.artist,
-          //     albumArtist: mediaItem.artist,
-          //     album: mediaItem.album,
-          //     genre: mediaItem.language,
-          //     year: mediaItem.publishedYear,
-          //     durationMs: mediaItem.duration * 1000,
-          //     fileSize: BigInt.from(file.lengthSync()),
-          //     picture: Picture(
-          //       data: File(imgPath).readAsBytesSync(),
-          //       mimeType: 'image/jpeg',
-          //     ),
-          //   ),
-          // );
-        }
-
-        AppConfig.logger.i('Closing connection & notifying listeners');
-        client.close();
-        lastDownloadId = mediaItem.id;
-        progress = 0.0;
+        activeSink.add(chunk);
+        received += chunk.length;
+        progress = DownloadProgress.progressFor(received, total);
         notifyListeners();
-
-        AppConfig.logger.i('Putting data to downloads database');
-        final AppMediaItem downloadedMediaItem = mediaItem;
-
-        downloadedMediaItem.path = mediaPath;
-        downloadedMediaItem.imgUrl = imgPath;
-        downloadedMediaItem.mediaSource = AppMediaSource.offline;
-
-        Hive.box(AppHiveBox.downloads.name).put(downloadedMediaItem.id, downloadedMediaItem.toJSON());
-
-        AppConfig.logger.i('Everything done, showing snackbar');
-        AppUtilities.showSnackBar(
-          message: '"${mediaItem.name}" ${DownloadTranslationConstants.downed.tr}',
-        );
-      } else {
-        download = true;
-        progress = 0.0;
-        File(mediaPath!).delete();
-        File(imgPath).delete();
       }
-    });
+      await activeSink.close();
+      sink = null;
+
+      // Integrity: a truncated file must never be registered as complete.
+      if (!DownloadProgress.isComplete(received, total)) {
+        throw Exception('Incomplete download for ${mediaItem.name}: '
+            '$received of $total bytes');
+      }
+
+      AppConfig.logger.i('Download complete ($received bytes), fetching artwork');
+      imgPath = await FileDownloader.downloadImage(mediaItem.imgUrl);
+      if (mediaItem.lyrics.isNotEmpty) AppConfig.logger.i('Getting audio tags');
+
+      lastDownloadId = mediaItem.id;
+
+      AppConfig.logger.i('Putting data to downloads database');
+      final AppMediaItem downloadedMediaItem = mediaItem;
+      downloadedMediaItem.path = mediaPath;
+      downloadedMediaItem.imgUrl = imgPath;
+      downloadedMediaItem.mediaSource = AppMediaSource.offline;
+
+      await Hive.box(AppHiveBox.downloads.name)
+          .put(downloadedMediaItem.id, downloadedMediaItem.toJSON());
+
+      AppConfig.logger.i('Everything done, showing snackbar');
+      AppUtilities.showSnackBar(
+        message: '"${mediaItem.name}" ${DownloadTranslationConstants.downed.tr}',
+      );
+    } on _DownloadCancelled {
+      AppConfig.logger.i('Download cancelled by user');
+      download = true;
+      _deleteIfExists(mediaPath);
+      _deleteIfExists(imgPath);
+    } catch (e, st) {
+      NeomErrorLogger.recordError(e, st, module: 'neom_downloads', operation: 'downloadMediaItem');
+      _deleteIfExists(mediaPath);
+      _deleteIfExists(imgPath);
+      AppUtilities.showSnackBar(
+        message: '"${mediaItem.name}" ${DownloadTranslationConstants.downloadFailed.tr}',
+      );
+    } finally {
+      await sink?.close();
+      client.close();
+      progress = 0.0;
+      notifyListeners();
+    }
   }
+
+  /// Best-effort cleanup of partial/placeholder files after a failed or
+  /// cancelled download.
+  void _deleteIfExists(String? path) {
+    if (path == null || path.isEmpty) return;
+    try {
+      final file = File(path);
+      if (file.existsSync()) file.deleteSync();
+    } catch (_) {}
+  }
+}
+
+/// Internal signal for user-initiated cancellation (the `download` flag),
+/// distinguished from real failures so no error snackbar is shown.
+class _DownloadCancelled implements Exception {
+  const _DownloadCancelled();
 }

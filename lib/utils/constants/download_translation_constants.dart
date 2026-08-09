@@ -3,6 +3,7 @@ class DownloadTranslationConstants {
 
   static const String downDone = 'downDone';
   static const String downed = 'downed';
+  static const String downloadFailed = 'downloadFailed';
   static const String yesReplace = 'yesReplace';
   static const String down = 'down';
   static const String downAgain = 'downAgain';
