@@ -380,6 +380,7 @@ class SaiaDownloadQueueController extends SintController {
   Future<void> _addToHistory(SaiaDownloadItem item, int fileSize) async {
     final historyItem = SaiaDownloadHistoryItem(
       id: item.trackId,
+      trackId: item.trackId,
       trackName: item.trackName,
       artistName: item.artistName,
       albumName: item.albumName,

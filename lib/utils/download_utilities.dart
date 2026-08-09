@@ -23,20 +23,24 @@ class DownloadUtilities {
     required String dirName,
     required bool writeAccess,
   }) async {
-    Directory? directory;
+    // path_provider speaks dart:io types while this module imports core_io;
+    // crossing between them through plain path strings keeps every platform
+    // compiling and analyzing cleanly.
+    String? androidPath;
 
     try {
       if (kIsWeb) return null;
       // checking platform
       if (Platform.isAndroid) {
         if (await requestPermission(Permission.storage)) {
-          directory = await getExternalStorageDirectory();
+          final extDir = await getExternalStorageDirectory();
 
           // getting main path
-          final String newPath = directory!.path
+          final String newPath = (extDir!).path
               .replaceFirst('Android/data/com.your.app/files', dirName);
+          androidPath = newPath;
 
-          directory = Directory(newPath);
+          final directory = Directory(newPath);
 
           // checking if directory exist or not
           if (!await directory.exists()) {
@@ -61,15 +65,15 @@ class DownloadUtilities {
           return throw 'something went wrong';
         }
       } else if (Platform.isIOS) {
-        directory = await getApplicationDocumentsDirectory();
-        return directory.path;
+        final dir = await getApplicationDocumentsDirectory();
+        return dir.path;
       } else {
-        directory = await getDownloadsDirectory();
-        return directory!.path;
+        final dir = await getDownloadsDirectory();
+        return dir!.path;
       }
     } catch (e) {
       rethrow;
     }
-    return directory.path;
+    return androidPath;
   }
 }

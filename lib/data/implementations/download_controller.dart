@@ -286,7 +286,9 @@ class DownloadController with ChangeNotifier implements DownloadService {
       appPath = Hive.box(AppHiveBox.settings.name).get('tempDirPath')?.toString();
       appPath ??= (await getTemporaryDirectory()).path;
     } else {
-      final Directory? temp = await getDownloadsDirectory();
+      // Untyped on purpose: path_provider speaks dart:io while this file
+      // imports core_io — only the .path string crosses over.
+      final temp = await getDownloadsDirectory();
       appPath = temp!.path;
     }
 
